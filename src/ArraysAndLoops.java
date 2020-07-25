@@ -187,28 +187,23 @@ public class ArraysAndLoops {
     эти символы в массив не входят.
     */
     public static boolean checkBalance(int[] arr) {
-        int sum1;
-        int sum2;
+        int sum = 0;
 
-        for (int i = 1; i < arr.length; i++) {
-
-            sum1 = 0;
-            sum2 = 0;
-
-            for (int j = 0; j < i; j++) {
-                sum1 += arr[j];
-            }
-
-            for (int j = i; j < arr.length; j++) {
-                sum2 += arr[j];
-            }
-
-            if (sum1 == sum2) {
-                return true;
-            }
+        for (int i = 0; i < arr.length; i++) {
+            sum += arr[i];
         }
 
-        return false;
+        if (sum % 2 != 0) {
+            return false;  // Сумма нечетная, решения нет
+        }
+
+        int sum1 = 0;
+        int i = 0;
+        while (sum1 < sum / 2) {
+            sum1 += arr[i];
+            i++;
+        }
+        return (sum1 == sum / 2);
     }
 
 
@@ -223,7 +218,7 @@ public class ArraysAndLoops {
             return;  // Нечего делать
         }
 
-        int cycles = Math.abs(n);  // Количество смещений
+        int cycles = Math.abs(n) % arr.length;  // Количество полезных смещений
         for (int i = 0; i < cycles; i++) {
             if (n > 0) {
                 shiftArrayRight(arr);
