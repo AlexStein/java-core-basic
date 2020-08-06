@@ -21,14 +21,14 @@ public class TicTacToe {
     // 4   5
     // 6 7 8
     static int[][] searchPath = {
-        {-1, -1},
-        {0, -1},
-        {1, -1},
-        {-1, 0},
-        {1, 0},
-        {1, -1},
-        {1, 0},
-        {1, 1}
+            {-1, -1},
+            {0, -1},
+            {1, -1},
+            {-1, 0},
+            {1, 0},
+            {1, -1},
+            {1, 0},
+            {1, 1}
     };
 
     static char[][] map;
@@ -138,6 +138,7 @@ public class TicTacToe {
 
     /**
      * Проверяет, входит ли ячейка в границы игрового поля.
+     *
      * @param y Номер строки на поле
      * @param x Номер столбца на поле
      * @return Координаты ячейки соотвествуют игровому полю
@@ -153,17 +154,31 @@ public class TicTacToe {
 
     /**
      * Ход компьютера:
-     * 1. Пытается блокировать победную комбинацию игрока
-     * 2. Пытается продолжить свою линию
-     * 3. Ставит новых знак рядом со своим
-     * 4. Если не выполнились пункты 1, 2, 3 - произвольный ход
+     * 1. Пыьается найти свою победную комбинацию
+     * 2. Пытается блокировать победную комбинацию игрока
+     * 3. Пытается блокировать комбинацию на 2 короче победной
+     * 4. Пытается продолжить свою линию
+     * 5. Ставит новых знак рядом со своим
+     * 6. Если не выполнились пункты 1, 2, 3 - произвольный ход
      */
     public static void aiTurn() {
         int x, y;
 
+        // Попытка найти свою победу
+        System.out.println("Пытаюсь выиграть...");
+        if (aiWinSearchTurn(DOT_O)) {
+            return;
+        }
+
         // Попытка блокировать ход игрока
         System.out.println("Пытаюсь блокировать...");
-        if (aiBlockingTurn()) {
+        if (aiWinSearchTurn(DOT_X)) {
+            return;
+        }
+
+        // Попытка блокировать ход игрока на 2 короче победы
+        System.out.println("Пытаюсь блокировать хорошие линии...");
+        if (aiWinSearchTurn(DOT_X, DOTS_TO_WIN - 1)) {
             return;
         }
 
@@ -191,25 +206,48 @@ public class TicTacToe {
     }
 
     /**
-     * Блокирующий ход компьютера. Поиск возможного хода игрока,
-     * приводящего к победе и замена своим знаком.
+     * Поиск победной линии заданной в настройках длины.
+     * Блокирование.
+     *
+     * @param c Символ для которого делаем проверку: Х или О.
      * @return Если ход сделан, возарщает Истина
      */
-    public static boolean aiBlockingTurn() {
-        int x, y;
+    public static boolean aiWinSearchTurn(char c) {
+        return aiWinSearchTurn(c, DOTS_TO_WIN);
+    }
 
-        // Найти пустые ячейки и проверить условие выигрыша играка
+    /**
+     * Поиск возможного хода, приводящего к победе и замена своим знаком.
+     * В случае поиска победы игрока, ход игрока блокируется, в случае
+     * поиска победы компьютера - компьютер выигрывает.
+     *
+     * @param c    Символ для которого делаем проверку: Х или О.
+     * @param dots Длина победной линии
+     * @return Если ход сделан, возарщает Истина
+     */
+    public static boolean aiWinSearchTurn(char c, int dots) {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (map[i][j] == DOT_EMPTY) {
 
-                    // Ставим знак Х
-                    map[i][j] = DOT_X;
+                    // Ставим знак O
+                    map[i][j] = c;
 
                     // Проверяем условие победы и ставим знак О
-                    if (checkWin(DOT_X)) {
-                        map[i][j] = DOT_O;
-                        return true;
+                    if (checkWin(c, dots)) {
+
+                        // При проверке победы, ставим символ всегда
+                        if (dots == DOTS_TO_WIN) {
+                            map[i][j] = DOT_O;
+                            return true;
+                        }
+
+                        // При проверке коротких линий, можем блокировать ход,
+                        // а можем и не блокировать.
+                        if (random.nextInt(2) == 1) {
+                            map[i][j] = DOT_O;
+                            return true;
+                        }
                     }
 
                     // Очищаем обратно
@@ -222,6 +260,7 @@ public class TicTacToe {
 
     /**
      * Попытка продолжить свою линию
+     *
      * @return Если ход сделан, возарщает Истина
      */
     public static boolean aiBuildLineTurn() {
@@ -274,6 +313,7 @@ public class TicTacToe {
 
     /**
      * Попытка оставить в свободную соседнюю
+     *
      * @return Если ход сделан, возарщает Истина
      */
     public static boolean aiSetNeighborTurn() {
@@ -325,18 +365,33 @@ public class TicTacToe {
     }
 
     /**
-     * Проверка критерия победы. Идея проверить все
-     * массивы размерности DOTS_TO_WIN x DOTS_TO_WIN впысывающиеся
-     * в игровое поле.
+     * Проверка критерия победы для линии DOTS_TO_WIN
      *
      * @param c Символ для которого делаем проверку: Х или О
      * @return Истина, если на поле есть победная последовательность.
      */
     public static boolean checkWin(char c) {
+        return checkWin(c, DOTS_TO_WIN);
+    }
+
+    /**
+     * Проверка критерия победы. Идея проверить все
+     * массивы размерности DOTS_TO_WIN x DOTS_TO_WIN впысывающиеся
+     * в игровое поле.
+     *
+     * @param c    Символ для которого делаем проверку: Х или О
+     * @param dots Длина победной линии
+     * @return Истина, если на поле есть победная последовательность.
+     */
+    public static boolean checkWin(char c, int dots) {
+        if (dots > SIZE || dots <= 0) {
+            return false;
+        }
+
         // Проверим строки и столбцы
-        for (int i = 0; i < SIZE - DOTS_TO_WIN + 1; i++) {
-            for (int j = 0; j < SIZE - DOTS_TO_WIN + 1; j++) {
-                if (checkAreaWin(c, i, j)) {
+        for (int i = 0; i < SIZE - dots + 1; i++) {
+            for (int j = 0; j < SIZE - dots + 1; j++) {
+                if (checkAreaWin(c, dots, i, j)) {
                     return true;
                 }
             }
@@ -346,48 +401,50 @@ public class TicTacToe {
     }
 
     /**
-     * Проверка массива размерности DOTS_TO_WIN x DOTS_TO_WIN на наличие
+     * Проверка массива размерности dots x dots на наличие
      * победного ряда символов в строке, столбце или диагонялях.
-     * @param c Символ для поиска
+     *
+     * @param c      Символ для поиска
+     * @param dots Длина победной линии и размерность матрицы поиска
      * @param startX начальная координата X на игровом поле для отсчета массива
      * @param startY начальная координата X на игровом поле для отсчета массива
      * @return
      */
-    public static boolean checkAreaWin(char c, int startX, int startY) {
+    public static boolean checkAreaWin(char c, int dots, int startX, int startY) {
 
-        char[] diagonal = new char[DOTS_TO_WIN];
-        char[] second_diagonal = new char[DOTS_TO_WIN];
+        char[] diagonal = new char[dots];
+        char[] second_diagonal = new char[dots];
 
-        for (int i = 0; i < DOTS_TO_WIN; i++) {
-            char[] line = new char[DOTS_TO_WIN];
-            char[] column = new char[DOTS_TO_WIN];
+        for (int i = 0; i < dots; i++) {
+            char[] line = new char[dots];
+            char[] column = new char[dots];
 
-            for (int j = 0; j < DOTS_TO_WIN; j++) {
+            for (int j = 0; j < dots; j++) {
                 line[j] = map[i + startX][j + startY];
                 column[j] = map[j + startY][i + startX];
             }
 
             // Строка i
-            if (checkSequence(line, c, DOTS_TO_WIN)) {
+            if (checkSequence(line, c, dots)) {
                 return true;
             }
 
             // Стобец i
-            if (checkSequence(column, c, DOTS_TO_WIN)) {
+            if (checkSequence(column, c, dots)) {
                 return true;
             }
 
             diagonal[i] = map[i + startX][i + startY];
-            second_diagonal[i] = map[DOTS_TO_WIN - 1 - i + startX][i + startY];
+            second_diagonal[i] = map[dots - 1 - i + startX][i + startY];
         }
 
         // Диагональ 1
-        if (checkSequence(diagonal, c, DOTS_TO_WIN)) {
+        if (checkSequence(diagonal, c, dots)) {
             return true;
         }
 
         // Диагональ 2
-        if (checkSequence(second_diagonal, c, DOTS_TO_WIN)) {
+        if (checkSequence(second_diagonal, c, dots)) {
             return true;
         }
 
