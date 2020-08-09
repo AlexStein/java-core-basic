@@ -47,6 +47,7 @@ public class MainWindow extends JFrame {
 
         entry = new TextField();
         entry.setFont(font);
+        entry.setEditable(false);
         topPanel.add(entry);
 
         add(topPanel, BorderLayout.NORTH);
@@ -191,13 +192,13 @@ public class MainWindow extends JFrame {
      * @param operation Знак действия +, -, * или /
      */
     private void calculate(String operand1, String operand2, char operation) {
-        float result = 0;
-        float o1;
-        float o2;
+        double result = 0;
+        double o1;
+        double o2;
 
         try {
-            o1 = Float.parseFloat(operand1);
-            o2 = Float.parseFloat(operand2);
+            o1 = Double.parseDouble(operand1);
+            o2 = Double.parseDouble(operand2);
 
         } catch (Exception e) {
             setError();
