@@ -3,8 +3,6 @@ package zoo.animals;
 public class Animal {
 
     static int animalCounter = 0;
-    static int catCounter = 0;
-    static int dogCounter = 0;
 
     String name;
     protected int maxSwimDistance;
@@ -23,7 +21,7 @@ public class Animal {
      */
     public static void printObjectCounter() {
         System.out.printf("Создано %d объектов класса Animal, %d Cat, %d Dog",
-                animalCounter, catCounter,dogCounter);
+                animalCounter, Cat.catCounter, Dog.dogCounter);
     }
 
     public void run(int distance) {

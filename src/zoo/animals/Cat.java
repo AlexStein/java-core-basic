@@ -2,6 +2,8 @@ package zoo.animals;
 
 public class Cat extends Animal {
 
+    static int catCounter = 0;
+
     public Cat(String name) {
         super(name);
         catCounter++;
